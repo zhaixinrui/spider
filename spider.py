@@ -68,27 +68,3 @@ finally:
     time.sleep(10)
     browser.close()
     browser.quit()
-# with Browser('chrome') as browser:
-#     url = "http://www.zun1777.com/"
-#     url = "http://www.beequick.cn/"
-#     browser.visit(url)
-#     iframe = browser.find_by_tag('iframe')
-#     iframe.
-#     print 1234
-#     # time.sleep(200)
-#     with browser.get_iframe('') as iframe:
-#         dir(iframe)
-#         # help(iframe)
-#         print iframe
-#         button = iframe.is_text_not_present('button')
-#         print button
-#         button.click()
-#         iframe.fill('username', 'splinter')
-#         iframe.fill('passwd', 'splinter')
-#         iframe.fill('rmNum', '1234')
-#         button = iframe.find_by_class('btnLogin')
-#         button.click()
-#         if iframe.is_text_present('splinter - python acceptance testing'):
-#             print("Yes, the official website was found!")
-#         else:
-#             print("No, it wasn't found... We need to improve our SEO techniques")
