@@ -21,6 +21,9 @@ try:
     browser.implicitly_wait(10)
     browser.get("http://www.beequick.cn")
     browser.execute_script('$("iframe").attr("id", "iframe");')
+    browser.execute_script('alert("123")')
+    print browser.switch_to.alert.text
+    browser.switch_to.alert.accept()
     print browser.get_log('driver')
     # time.sleep(4)
     browser.switch_to.frame("iframe")
