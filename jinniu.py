@@ -24,29 +24,16 @@ class Site(object):
 
     def login(self):
         self.browser.get(self.conf['url'])
-        # print self.browser.page_source
-
         # 切到iframe
         self.browser.execute_script('document.getElementsByTagName("iframe")[0].id="iframe"')
         self.browser.switch_to.frame("iframe")
         print '切到iframe'
 
-        # 等待浮框加载后关掉
-        try:
-            element = WebDriverWait(self.browser, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "ui-dialog-titlebar-close"))
-            )
-            btnCloseDialog = self.browser.find_element_by_class_name('ui-dialog-titlebar-close')
-            btnCloseDialog.click()
-            print '关掉广告浮层'
-        except Exception, e:
-            print '关掉广告浮层失败，未找到'
-
         # 自动填充用户名密码
         inputUserName = self.browser.find_element_by_id('username')
         inputPasswd   = self.browser.find_element_by_id('passwd')
         inputRmNum    = self.browser.find_element_by_id('rmNum')
-        btnLogin      = self.browser.find_element_by_class_name('btnLogin')
+        btnLogin      = self.browser.find_element_by_class_name('loginBTN')
         inputUserName.send_keys(self.conf['username'])
         inputPasswd.send_keys(self.conf['passwd'])
         print '自动填充用户名密码'
@@ -60,9 +47,9 @@ class Site(object):
             time.sleep(0.1)
 
         # 登录成功后自动关掉提示框
-        WebDriverWait(self.browser,10).until(EC.alert_is_present())
+        WebDriverWait(self.browser, 10).until(EC.alert_is_present())
         self.browser.switch_to.alert.accept()
-        WebDriverWait(self.browser,10).until(EC.alert_is_present())
+        WebDriverWait(self.browser, 10).until(EC.alert_is_present())
         self.browser.switch_to.alert.accept()
         print '登录成功后自动关掉提示框'
 
@@ -70,18 +57,6 @@ class Site(object):
         btns = self.browser.find_elements_by_class_name('za_button')
         btns[1].click()
         print '同意用户协议'
-
-        # 等待浮框加载后关掉
-        try:
-            element = WebDriverWait(self.browser, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "ui-dialog-titlebar-close"))
-            )
-            btnCloseDialog = self.browser.find_element_by_class_name('ui-dialog-titlebar-close')
-            time.sleep(2)
-            btnCloseDialog.click()
-            print '关掉支付提示浮层'
-        except Exception, e:
-            print '关闭支付提示浮层失败，未找到'
 
     def clear(self):
         try:
@@ -92,12 +67,13 @@ class Site(object):
         finally:
             print '关闭浏览器退出'
 
+
 if __name__ == '__main__':
     try:
-        s = Site('baizun')
+        s = Site('jinniu')
         s.login()
-        time.sleep(100)
     except Exception, e:
         raise e
     finally:
         s.clear()
+
