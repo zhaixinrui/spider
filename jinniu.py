@@ -9,6 +9,7 @@ sys.setdefaultencoding('utf8')
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -46,17 +47,33 @@ class Site(object):
                 break
             time.sleep(0.1)
 
-        # 登录成功后自动关掉提示框
-        WebDriverWait(self.browser, 10).until(EC.alert_is_present())
-        self.browser.switch_to.alert.accept()
-        WebDriverWait(self.browser, 10).until(EC.alert_is_present())
-        self.browser.switch_to.alert.accept()
-        print '登录成功后自动关掉提示框'
+        try:
+            # 登录成功后自动关掉提示框
+            WebDriverWait(self.browser, 10).until(EC.alert_is_present())
+            self.browser.switch_to.alert.accept()
+            WebDriverWait(self.browser, 10).until(EC.alert_is_present())
+            self.browser.switch_to.alert.accept()
+            print '登录成功后自动关掉提示框'
+        except Exception, e:
+            pass
 
         # 同意用户协议
         btns = self.browser.find_elements_by_class_name('za_button')
         btns[1].click()
         print '同意用户协议'
+        time.sleep(5)
+
+    def touzhu(self):
+        try:
+            # print self.browser.page_source
+            # element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "LS-first")))
+            a1 = s.browser.find_element_by_link_text('体育赛事')
+            action = ActionChains(self.browser);
+            action.move_to_element(a1).perform();
+            a2 = s.browser.find_element_by_link_text('体育投注')
+            a2.click()
+        except Exception, e:
+            print '跳投注页异常'
 
     def clear(self):
         try:
@@ -72,6 +89,8 @@ if __name__ == '__main__':
     try:
         s = Site('jinniu')
         s.login()
+        s.touzhu()
+        time.sleep(10000)
     except Exception, e:
         raise e
     finally:

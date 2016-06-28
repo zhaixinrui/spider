@@ -6,7 +6,7 @@ conf = {
     'chromedriver': '/usr/local/bin/chromedriver',
     'sites': {
         'baizun':{
-            'url': 'http://www.zun1777.com/',
+            'url': 'http://www.zun1777.com/?jdfwkey=grpzj',
             'username': 'bbccaa243',
             'passwd': 'asd1122',
         },

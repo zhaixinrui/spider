@@ -9,22 +9,23 @@ sys.setdefaultencoding('utf8')
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from conf import conf
 
 class Site(object):
-    def __init__(self, siteName):
-        self.siteName = siteName
+    def __init__(self):
+        self.siteName = 'baizun'
         self.browser = webdriver.Chrome(conf['chromedriver'])
         os.environ["webdriver.chrome.driver"] = conf['chromedriver']
         self.browser.implicitly_wait(10)
-        self.conf = conf['sites'][siteName]
+        self.conf = conf['sites'][self.siteName]
 
     def login(self):
         self.browser.get(self.conf['url'])
-        # print self.browser.page_source
+        print self.browser.page_source
 
         # 切到iframe
         self.browser.execute_script('document.getElementsByTagName("iframe")[0].id="iframe"')
@@ -83,6 +84,19 @@ class Site(object):
         except Exception, e:
             print '关闭支付提示浮层失败，未找到'
 
+    def touzhu(self):
+        while True:
+            try:
+                # print self.browser.page_source
+                a1 = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.LINK_TEXT, "体育赛事")))
+                ActionChains(self.browser).move_to_element(a1).perform()
+                a2 = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.LINK_TEXT, "体育投注")))
+                a2.click()
+                break
+            except Exception, e:
+                print '跳投注页异常:' + e
+
+
     def clear(self):
         try:
             self.browser.close()
@@ -94,9 +108,10 @@ class Site(object):
 
 if __name__ == '__main__':
     try:
-        s = Site('baizun')
+        s = Site()
         s.login()
-        time.sleep(100)
+        s.touzhu()
+        time.sleep(100000)
     except Exception, e:
         raise e
     finally:
