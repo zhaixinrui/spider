@@ -3,6 +3,8 @@
 import json
 import time
 import os
+import urllib
+import random
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -12,17 +14,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
-import urllib
-import random
+import pytesseract
+from PIL import Image
 
 from conf import conf
 
 class Site(object):
     def __init__(self):
         self.siteName = 'baizun'
-        self.browser = webdriver.Chrome(conf['chromedriver'])
-        os.environ["webdriver.chrome.driver"] = conf['chromedriver']
+        # self.browser = webdriver.Chrome(conf['chromedriver'])
+        # os.environ["webdriver.chrome.driver"] = conf['chromedriver']
+        self.browser = webdriver.PhantomJS()
         self.browser.implicitly_wait(10)
         self.conf = conf['sites'][self.siteName]
 
@@ -74,23 +76,34 @@ class Site(object):
         btnLogin      = self.browser.find_element_by_class_name('btnLogin')
         inputUserName.send_keys(self.conf['username'])
         inputPasswd.send_keys(self.conf['passwd'])
+        print '点击获取验证码'
         inputRmNum.click()
+        while True:
+            time.sleep(1)
+            img      = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.ID, "vPic")))
+            # self.browser.maximize_window()
+            # print self.browser.get_window_size()
+            self.browser.save_screenshot('/Users/zhaixinrui/tmp.png')  #截取当前网页，该网页有我们需要的验证码
+            location = img.location  #获取验证码x,y轴坐标
+            size     = img.size  #获取验证码的长宽
+            rangle   = (int(location['x']),int(location['y']),int(location['x']+size['width']),int(location['y']+size['height'])) #写成我们需要截取的位置坐标
+            # rangle   = [i*2 for i in rangle]
+            print location, size, rangle
+            tmpImg   = Image.open("/Users/zhaixinrui/tmp.png") #打开截图
+            frame4   = tmpImg.crop(rangle)  #使用Image的crop函数，从截图中再次截取我们需要的区域
+            frame4.save('/Users/zhaixinrui/frame4.jpg')
+            vc       = pytesseract.image_to_string(Image.open('/Users/zhaixinrui/frame4.jpg')) #使用image_to_string识别验证码
+            vc = filter(lambda x:x.isdigit(),vc)
+            if len(vc) == 4:
+                print '自动填充验证码：' + vc
+                inputRmNum.send_keys(vc)
+                btnLogin.click()
+                break
+            else:
+                print '获取验证码失败：' + vc
+                img.click()
+                continue
 
-        print '自动填充用户名密码'
-        img = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.ID, "vPic")))
-        vc = s.getVerifyCode()
-        inputRmNum.send_keys(vc)
-        btnLogin.click()
-        # imgUrl = img.get_attribute("src")
-        # print imgUrl
-        # # 等待验证码填写完成后登录
-        # while True:
-        #     v = inputRmNum.get_attribute("value")
-        #     if(len(v) == 4):
-        #         btnLogin.click()
-        #         break
-        #     time.sleep(0.1)
-        time.sleep(100000)
         # # 登录成功后自动关掉提示框
         # WebDriverWait(self.browser,10).until(EC.alert_is_present())
         # self.browser.switch_to.alert.accept()
@@ -98,22 +111,22 @@ class Site(object):
         # self.browser.switch_to.alert.accept()
         # print '登录成功后自动关掉提示框'
 
-        # # 同意用户协议
-        # btns = self.browser.find_elements_by_class_name('za_button')
-        # btns[1].click()
-        # print '同意用户协议'
+        # 同意用户协议
+        btns = self.browser.find_elements_by_class_name('za_button')
+        btns[1].click()
+        print '同意用户协议'
 
-        # # 等待浮框加载后关掉
-        # try:
-        #     element = WebDriverWait(self.browser, 10).until(
-        #         EC.presence_of_element_located((By.CLASS_NAME, "ui-dialog-titlebar-close"))
-        #     )
-        #     btnCloseDialog = self.browser.find_element_by_class_name('ui-dialog-titlebar-close')
-        #     time.sleep(2)
-        #     btnCloseDialog.click()
-        #     print '关掉支付提示浮层'
-        # except Exception, e:
-        #     print '关闭支付提示浮层失败，未找到'
+        # 等待浮框加载后关掉
+        try:
+            btnCloseDialog = WebDriverWait(self.browser, 30).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "ui-dialog-titlebar-close"))
+            )
+            btnCloseDialog = self.browser.find_element_by_class_name('ui-dialog-titlebar-close')
+            time.sleep(1)
+            btnCloseDialog.click()
+            print '关掉支付提示浮层'
+        except Exception, e:
+            print '关闭支付提示浮层失败，未找到'
 
     def touzhu(self):
         while True:
@@ -123,9 +136,10 @@ class Site(object):
                 ActionChains(self.browser).move_to_element(a1).perform()
                 a2 = WebDriverWait(self.browser, 20).until(EC.presence_of_element_located((By.LINK_TEXT, "体育投注")))
                 a2.click()
+                print '跳转投注页'
                 break
             except Exception, e:
-                print '跳投注页异常:' + e
+                time.sleep(1)
 
 
     def clear(self):
@@ -142,6 +156,8 @@ if __name__ == '__main__':
         s = Site()
         s.login()
         s.touzhu()
+        time.sleep(10)
+        print s.browser.page_source
         time.sleep(100000)
     # except Exception, e:
     #     raise e
